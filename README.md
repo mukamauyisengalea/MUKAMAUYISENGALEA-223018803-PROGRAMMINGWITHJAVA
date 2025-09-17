@@ -59,13 +59,11 @@ Used to check if the total bill qualifies for a discount. This teaches decision-
 - It combines multiple programming concepts in one cohesive task.
 - It builds confidence by showing how code can solve real problems.
 
-Would you like help turning this into a presentation or report? I can help you make it shine!
-
-Absolutely! Let’s break down **Case Study 2: Student Grading System** in a way that’s practical, relatable, and highlights its importance—without diving into code.
 
 
 
-**Student Grading System – PROJECT TWO**
+
+**Student Grading System – PROJECT 2**
 
 **Background**
 Imagine a university lecturer sitting in an exam hall or office, receiving student scores one by one. They don’t know how many students will show up, but they need a reliable way to:
@@ -136,6 +134,76 @@ This project is a hands-on way to explore key programming concepts:
 - It’s relatable—everyone has received grades.
 - It’s practical—solves a real problem in education.
 - It’s educational—teaches how to build systems that think, count, and report.
+
+  
+
+
+
+**Class Attendance Tracker – PROJECT3**
+
+**Background**
+Imagine a class representative (CR) who’s responsible for tracking attendance every day. Instead of scribbling numbers in a notebook or trying to remember who showed up, they want a simple digital system that:
+- Records attendance daily
+- Allows flexibility (some days they might skip)
+- Gives a clear summary at the end of the semester
+
+This project builds that system—smart, simple, and reliable.
+
+
+
+**Purpose of the System**
+The goal is to help the CR keep accurate attendance records over time. It’s not just about counting heads—it’s about understanding patterns. Was attendance strong throughout the semester? Were there days when many students were absent? This system answers those questions with clarity.
+
+
+
+
+**Why This Project Is Valuable**
+
+**Practical Benefits**
+- **Consistency**: Ensures attendance is recorded every time the CR chooses to log it.
+- **Flexibility**: The CR can decide when to stop entering data—perfect for unpredictable schedules.
+- **Insightful Summary**: At the end, the system shows average attendance and flags low-attendance days.
+
+**Educational Benefits**
+- Encourages responsibility and organization.
+- Helps identify trends (e.g., low attendance on Mondays?).
+- Supports better planning for future classes or events.
+
+
+**What Students Learn by Building It**
+
+This project is a hands-on way to explore key programming concepts:
+
+- **Do-While Loop**: Ensures attendance is recorded at least once, even if the CR only logs one day.
+- **Arrays**: Used to store daily attendance numbers—like a digital ledger.
+- **Conditional Logic**: Helps analyze which days had poor attendance and calculate averages.
+
+
+
+ **How the System Works (Step-by-Step)**
+
+1. The CR enters the total number of students in the class.
+2. Each day:
+   - They input how many students were present.
+   - The system stores this number.
+   - The CR is asked if they want to enter attendance for another day.
+3. After data entry ends:
+   - The system calculates the average attendance.
+   - It identifies days where attendance was below 50% of the class size.
+   - It prints a table showing attendance per day.
+   - It shows the percentage of days with low attendance.
+
+
+
+**Why It’s a Great Beginner Project**
+- It’s practical—attendance tracking is a real need in schools and universities.
+- It’s educational—teaches how to build systems that store, analyze, and report data.
+- It’s empowering—shows how simple tools can make a big difference in organization and planning.
+
+
+
+
+
 
 
 

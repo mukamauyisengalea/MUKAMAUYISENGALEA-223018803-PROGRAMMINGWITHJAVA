@@ -63,7 +63,7 @@ Would you like help turning this into a presentation or report? I can help you m
 
 Absolutely! Let’s break down **Case Study 2: Student Grading System** in a way that’s practical, relatable, and highlights its importance—without diving into code.
 
----
+
 
 **Student Grading System – PROJECT TWO**
 
@@ -75,7 +75,7 @@ Imagine a university lecturer sitting in an exam hall or office, receiving stude
 
 This project creates a digital assistant that does all of that—quickly, accurately, and without the need for manual calculations.
 
----
+
 
 **Purpose of the System**
 The goal is to simplify the grading process. Instead of flipping through grading charts or tallying results by hand, the lecturer enters each score and the system:
@@ -85,7 +85,7 @@ The goal is to simplify the grading process. Instead of flipping through grading
 
 It’s like turning a tedious task into a smooth, intelligent workflow.
 
----
+
 
 **Why This Project Is Valuable**
 
@@ -100,7 +100,7 @@ It’s like turning a tedious task into a smooth, intelligent workflow.
 - Encourages data-driven teaching adjustments.
 - Builds trust with students through consistent grading.
 
----
+
 
 **What Students Learn by Building It**
 
@@ -110,7 +110,7 @@ This project is a hands-on way to explore key programming concepts:
 - **If–Else Logic**: Helps the system make decisions—like assigning grades based on score ranges.
 - **Counters and Percentages**: Tracks how many students passed or failed, and calculates the overall pass rate. This introduces basic data analysis.
 
----
+
 
 **How the System Works (Step-by-Step)**
 
@@ -130,7 +130,7 @@ This project is a hands-on way to explore key programming concepts:
    - Pass/fail breakdown
    - Class pass rate in percentage
 
----
+
 
 **Why It’s a Great Beginner Project**
 - It’s relatable—everyone has received grades.

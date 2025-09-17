@@ -1,8 +1,12 @@
 # MUKAMAUYISENGALEA-223018803-PROGRAMMINGWITHJAVA
 PROGRAMMINGWITHJAVA
+
+ 
  **Supermarket Billing System – Case Study Overview**
 
+
 **Purpose of the Project1**
+
 This project is designed to help a supermarket owner streamline the billing process. Instead of manually calculating the cost of each item a customer buys—which can be slow and prone to mistakes—the system automates everything. It ensures faster checkout, accurate totals, and smart discount handling.
 
 
@@ -20,6 +24,7 @@ This project is designed to help a supermarket owner streamline the billing proc
 - Makes daily sales tracking easier for the owner.
 
  **Learning Outcomes for Students**
+
 This project is a fantastic way to learn key programming concepts in a practical setting:
  Variables
 Used to store item names, prices, quantities, and totals—just like a digital memory.
@@ -34,6 +39,7 @@ Used to check if the total bill qualifies for a discount. This teaches decision-
 
 
 **What the Program Does**
+
 - Asks how many different items were purchased.
 - For each item, it collects:
 - Name of the item
@@ -48,6 +54,7 @@ Used to check if the total bill qualifies for a discount. This teaches decision-
 - Final amount to be paid
 
 **Why It’s a Great Beginner Project**
+
 - It’s relatable—everyone shops!
 - It combines multiple programming concepts in one cohesive task.
 - It builds confidence by showing how code can solve real problems.

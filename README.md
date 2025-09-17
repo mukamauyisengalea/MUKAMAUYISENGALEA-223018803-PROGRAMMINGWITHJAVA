@@ -226,7 +226,7 @@ public class AttendanceTracker {
         int lowAttendanceDays = 0, totalAttendance = 0;
         System.out.println(" Attendance Report");
         for (int i = 0; i < dayCount; i++) {
-            System.out.printf("Day %d -> Present: %d\n", i + 1, attendance[i]);
+            System.out.println("Day %d -> Present: %d\n", i + 1, attendance[i]);
             totalAttendance += attendance[i];
             if (attendance[i] < classSize / 2) lowAttendanceDays++;
         }
@@ -234,8 +234,8 @@ public class AttendanceTracker {
         double average = totalAttendance / (double) dayCount;
         double lowAttendanceRate = (lowAttendanceDays * 100.0) / dayCount;
 
-        System.out.printf("Average Attendance: %.2f\n", average);
-        System.out.printf("Low Attendance Days: %d (%.2f%%)\n", lowAttendanceDays, lowAttendanceRate);
+        System.out.println("Average Attendance: %.2f\n", average);
+        System.out.println("Low Attendance Days: %d (%.2f%%)\n", lowAttendanceDays, lowAttendanceRate);
     }
 }
 

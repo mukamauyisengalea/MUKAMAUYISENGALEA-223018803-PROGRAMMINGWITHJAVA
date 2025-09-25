@@ -1,0 +1,273 @@
+
+ON 17/O7/2025 DAY TWO AND 18/09/2025 DAY THREE
+
+casetudy1.superMarketBilling system
+
+package com.BillingSystem;
+
+public class Item {
+
+	 private final String name;
+	    private final double price;
+	    private final int quantity;
+	    private final double subtotal  ;
+	    public Item(String name, double price, int quantity) {
+	        this.name = name;
+	        this.price = price;
+	        this.quantity = quantity;
+	        this.subtotal  = price * quantity;
+
+	    }
+
+	    public String getName() {
+	        return name;
+	    }
+
+	    public double getPrice() {
+	        return price;
+	    }
+
+	    public int getQuantity() {
+	        return quantity;
+	    }
+	    public Double getGrandTotal() {
+	        return subtotal ;
+	    }
+	    public Double getAmountPayable() {
+	        return subtotal;
+	    }
+
+	}
+
+
+package com.BillingSystem;
+
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+public class BillingSystem {
+
+	private static double total_bill;
+    public static void show() throws InputMismatchException {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("How many different items the customer bought? ");
+        int n_items = sc.nextInt();
+        Item[] items = new Item[n_items];
+        for(int i = 0; i < n_items; i++) {
+            System.out.print("Please enter the name of the item you want to add to the customer ");
+            String name = sc.next();
+            System.out.println("Please enter the price of the item you want to add to the customer ");
+            double price = sc.nextDouble();
+            System.out.println("Please enter the quantity of the item you want to add to the customer ");
+            int quantity = sc.nextInt();
+            items[i] = new Item(name, price, quantity);
+            total_bill += items[i].getGrandTotal();
+        }
+        Double discount = calculateDiscount();
+        double finalAmount = total_bill - discount;
+        displayReceipt(n_items, items, discount, finalAmount);
+
+
+    }
+    public static Double calculateDiscount() {
+        if (total_bill >= 50_000) {
+            return total_bill * 0.05;
+        } else {
+            return 0.0;
+        }
+    }
+    public static void displayReceipt(int n_items, Item[] items, Double discount, Double finalAmount) {
+        System.out.println("\n--- Supermarket Receipt ---");
+        System.out.format("%-15s %-10s %-15s %-10s\n", "Item", "Qty", "Price/Unit", "Subtotal");
+        for (int i = 0; i < n_items; i++) {
+            System.out.printf("%-15s %-10d %-15.2f %-10.2f\n",
+                    items[i].getName(), items[i].getQuantity(), items[i].getPrice(), items[i].getAmountPayable());
+        }
+
+        System.out.println("-------------------------------------------\n" );
+        System.out.println("Grand Total (before discount): %.2f\n", total_bill);
+        System.out.println("Discount: %.2f\n", discount);
+        System.out.println("Final Amount Payable: %.2f\n", finalAmount);
+    }
+}
+
+casestudy2;student grade system
+
+package com.GradingSystem;
+
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+public class GradingSystem {
+    private static char choice;
+    private static int passes = 0;
+    private static String grade;
+    public  static void show(Scanner scanner) throws InputMismatchException {
+        System.out.println("How may students Will Take exam");
+        int n = scanner.nextInt();
+        String[] students = new String[n];
+        double[] grades = new double[n];
+        for (int i = 0; i < n; i++) {
+            System.out.println("Enter student " + (i + 1) + "'s name");
+            students[i] = scanner.next();
+        }
+        for (int i = 0; i < n; i++) {
+            System.out.println("Enter grade for " + (students[i]));
+            double mark = scanner.nextInt();
+            if (mark >= 0 && mark <= 100) {
+                grades[i] =  mark;
+                 if (mark >= 80) {
+                     setGrade("A");
+                 } else if (mark >= 70) {
+                     setGrade("B");
+                 } else if (mark >= 60) {
+                     setGrade("C");
+                 } else if (mark >= 50) {
+                     setGrade("D");
+                 } else {
+                     setGrade("F");
+                 }
+                 System.out.println(("Student " + (i + 1) + "'s grade is " + grade + "\n" ));
+                 System.out.println("Do you need to add other marks? y/n");
+                  setChoice(scanner);
+                if (choice == 'n') break;
+            }else {
+                System.out.println("Enter marks less than or equal to 100");
+            }
+
+        }
+        for (double grade : grades) {
+            if (grade >= 50) {
+                setPasses();
+            }
+        }
+        var failed = grades.length - passes;
+        System.out.println("\n--- Summary Report ---");
+        System.out.println("Total Students: " + students.length);
+        System.out.println("Passed: " + passes);
+        System.out.println("Failed: " + failed);
+
+        if (students.length > 0) {
+            double passRate = (passes * 100.0) / students.length;
+            System.out.printf("Class Pass Rate: %.2f%%\n", passRate);
+        } else {
+            System.out.println("No students were entered.");
+        }
+
+    }
+    public static void setChoice(Scanner scanner) {
+        choice = scanner.next().charAt(0);
+    }
+    public static void setPasses() {
+        passes++;
+    }
+    public static void setGrade(String g) {
+        grade = g;
+    }
+}
+
+casestudy3.class AttendenceTrack
+package com.attendencetracker;
+
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+public class GradingSystem {
+    private static char choice;
+    private static int passes = 0;
+    private static String grade;
+    public  static void show(Scanner scanner) throws InputMismatchException {
+        System.out.println("How may students Will Take exam");
+        int n = scanner.nextInt();
+        String[] students = new String[n];
+        double[] grades = new double[n];
+        for (int i = 0; i < n; i++) {
+            System.out.println("Enter student " + (i + 1) + "'s name");
+            students[i] = scanner.next();
+        }
+        for (int i = 0; i < n; i++) {
+            System.out.println("Enter grade for " + (students[i]));
+            double mark = scanner.nextInt();
+            if (mark >= 0 && mark <= 100) {
+                grades[i] =  mark;
+                 if (mark >= 80) {
+                     setGrade("A");
+                 } else if (mark >= 70) {
+                     setGrade("B");
+                 } else if (mark >= 60) {
+                     setGrade("C");
+                 } else if (mark >= 50) {
+                     setGrade("D");
+                 } else {
+                     setGrade("F");
+                 }
+                 System.out.println(("Student " + (i + 1) + "'s grade is " + grade + "\n" ));
+                 System.out.println("Do you need to add other marks? y/n");
+                  setChoice(scanner);
+                if (choice == 'n') break;
+            }else {
+                System.out.println("Enter marks less than or equal to 100");
+            }
+
+        }
+        for (double grade : grades) {
+            if (grade >= 50) {
+                setPasses();
+            }
+        }
+        var failed = grades.length - passes;
+        System.out.println("\n--- Summary Report ---");
+        System.out.println("Total Students: " + students.length);
+        System.out.println("Passed: " + passes);
+        System.out.println("Failed: " + failed);
+
+        if (students.length > 0) {
+            double passRate = (passes * 100.0) / students.length;
+            System.out.printf("Class Pass Rate: %.2f%%\n", passRate);
+        } else {
+            System.out.println("No students were entered.");
+        }
+
+    }
+    public static void setChoice(Scanner scanner) {
+        choice = scanner.next().charAt(0);
+    }
+    public static void setPasses() {
+        passes++;
+    }
+    public static void setGrade(String g) {
+        grade = g;
+    }
+}
+
+ASSIGNMENT ON 18/O9/2025
+
+
+package com.RectangleCalculate;
+
+public class RectangleCalculator {
+    private double length;
+    private double width;
+    public double getLength() {
+        return length;
+    }
+
+    public void setLength(double length) {
+        this.length = length;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
+    }
+    public void checkIfIsSquare() {
+       if (length == width) {
+           System.out.println("Your rectangle is square");
+       }
+    }
+
+
+}

@@ -1,0 +1,189 @@
+ON 19/O9/2025
+
+package com.entities;
+
+public class Circle {
+    private final double radius;
+    private final double pi = 3.14;
+    public Circle(double radius) {
+        this.radius = radius;
+    }
+    public double calculateArea() {
+        return pi * radius * radius;
+    }
+    public double calculateCircumference() {
+        return 2 * pi * radius;
+    }
+}
+
+package com.entities;
+
+public class Rectangle {
+    private final double length;
+    private final double width;
+    public Rectangle(double length, double width) {
+        this.length = length;
+        this.width = width;
+    }
+    public double calculateArea() {return length * width;}
+    public double calculatePerimeter() {return (length + width);}
+    public double getLength() {
+        return length;
+    }
+    public double getWidth() {
+        return width;
+    }
+}
+
+
+package com.entities;
+
+public class Square {
+    private final double side;
+    public Square(double side) {
+        this.side = side;
+    }
+    public double calculateArea() {
+        return side * side;
+    }
+    public double calculatePerimeter() {
+        return  side * 4;
+    }
+}
+package com.entities;
+
+public class Triangle {
+    private final double height;
+    private final double base;
+    private final double hypotenuse;
+    public Triangle(double height, double base) {
+        this.height = height;
+        this.base = base;
+        this.hypotenuse = Math.sqrt(Math.pow(height, 2) + Math.pow(base, 2));
+    }
+    public double calculatePerimeter() {
+        return hypotenuse + base + height;
+    }
+    public double calculateArea() {
+        return base * height / 2;
+    }
+    public double getHeight() {
+        return height;
+    }
+
+    public double getBase() {
+        return base;
+    }
+
+    public double getHypotenuse() {
+        return hypotenuse;
+    }
+}
+package com.entities;
+
+import individual_assisgnment.entities.Circle;
+import individual_assisgnment.entities.Rectangle;
+import individual_assisgnment.entities.Square;
+import individual_assisgnment.entities.Triangle;
+import java.util.Scanner;
+
+public class TestShape{
+    private static final Scanner scanner = new Scanner(System.in);
+    private static char choice;
+    public static void main(String[] args) {
+       do {
+           int c = printMenu();
+           switch (c) {
+               case 1:
+                   double length = getInput("Enter Length:  ");
+                   double width = getInput("Enter Width:  ");
+                   Rectangle rectangle = new Rectangle(length, width);
+                   System.out.println("The length now is: " + rectangle.getLength());
+                   System.out.println("The width now is: " + rectangle.getWidth());
+                   int chosen = askAreaOrPerimeter();
+                   if (chosen == 1) {
+                       System.out.println("The are of Rectangle: " + rectangle.calculateArea());
+                   }else if (chosen == 2) {
+                       System.out.println("The perimeter of Rectangle: " + rectangle.calculatePerimeter());
+                   }
+                   break;
+                case 2:
+                    double base = getInput("Enter Base:  ");
+                    double height = getInput("Enter Height:  ");
+                    Triangle triangle = new Triangle(base, height);
+                    System.out.println("The base now is: " + triangle.getBase());
+                    System.out.println("The height now is: " + triangle.getHeight());
+                    System.out.println("The Hypotenuse calculated is: " + triangle.getHypotenuse());
+                    int choose = askAreaOrPerimeter();
+                    if (choose == 1) {
+                        System.out.println("The area of Triangle: " + triangle.calculateArea());
+                    } else if (choose == 2) {
+                        System.out.println("The perimeter of Triangle: " + triangle.calculatePerimeter());
+                    }else  {
+                        System.out.println("Invalid choice");
+                    }
+                    break;
+                case 3:
+                    double radius = getInput("Enter Radius:  ");
+                    Circle circle = new Circle(radius);
+                    System.out.println("Do you want area or circumference? ");
+                    System.out.println("1, Area");
+                    System.out.println("2, Circumference");
+                    int isArea = (int) getInput("Enter Choice: ");
+                    if (isArea == 1) {
+                        System.out.println("The area of Circle: " + circle.calculateArea());
+                    }else if (isArea == 2) {
+                        System.out.println("The circumference is:  " + circle.calculateCircumference());
+                    } else {
+                        System.out.println("Invalid choice");
+                    }
+                    break;
+                case 4:
+                    double side = getInput("Enter Side:  ");
+                    Square square = new Square(side);
+                    int isAreaOrPerimeter = askAreaOrPerimeter();
+                    if (isAreaOrPerimeter == 1) {
+                        System.out.println("The area of Square: " + square.calculateArea());
+                    }else if (isAreaOrPerimeter == 2) {
+                        System.out.println("The perimeter of Square: " + square.calculatePerimeter());
+                    } else {
+                        System.out.println("Invalid choice");
+
+                    }
+                    break;
+                    default:
+                        System.out.println("Invalid choice");
+                        break;
+           }
+           toContinue();
+       } while (choice == 'y');
+        scanner.close();
+        System.out.println("Thank you for using our application!");
+    }
+    public static int printMenu() {
+        System.out.println("Select shape Below");
+        System.out.println("1. Rectangle");
+        System.out.println("2. Triangle");
+        System.out.println("3. Circle");
+        System.out.println("4. Square");
+        return (int) getInput("Enter Your Choice: ");
+
+    }
+    public static double getInput(String question) {
+        System.out.print(question);
+        return scanner.nextDouble();
+    }
+    public static int askAreaOrPerimeter() {
+        System.out.println("Do you want area or perimeter?");
+        System.out.println("1: Area");
+        System.out.println("2: Perimeter");
+        System.out.print("Enter Your Choice: ");
+        return scanner.nextInt();
+    }
+    public static void toContinue() {
+        System.out.print("Do you want to continue? y/n: ");
+        choice = scanner.next().charAt(0);
+    }
+
+}
+

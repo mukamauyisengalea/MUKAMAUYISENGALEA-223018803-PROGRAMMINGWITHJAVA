@@ -1,6 +1,10 @@
 # MUKAMAUYISENGALEA-223018803-PROGRAMMINGWITHJAVA
 PROGRAMMINGWITHJAVA
 
+ALL ASSIGNMENT MAKE USE NOTEPAD INORDER TO AVOID COMFUSION BUT ALL ARE INCLUDED IN HERE IN FORM OF CODE 
+
+ 
+ 
  
  **Supermarket Billing System – Case Study Overview**
 
@@ -199,49 +203,6 @@ This project is a hands-on way to explore key programming concepts:
 - It’s practical—attendance tracking is a real need in schools and universities.
 - It’s educational—teaches how to build systems that store, analyze, and report data.
 - It’s empowering—shows how simple tools can make a big difference in organization and planning.
-
-
-**project 3 code**
-import java.util.Scanner;
-
-public class AttendanceTracker {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Enter total number of students in class: ");
-        int classSize = sc.nextInt();
-
-        int[] attendance = new int[30];
-        int dayCount = 0;
-        String choice;
-
-        do {
-            System.out.print("Enter number of students present on Day " + (dayCount + 1) + ": ");
-            attendance[dayCount] = sc.nextInt();
-            dayCount++;
-
-            System.out.print("Record another day? (yes/no): ");
-            choice = sc.next();
-        } while (choice.equalsIgnoreCase("yes") && dayCount < 30);
-
-        int lowAttendanceDays = 0, totalAttendance = 0;
-        System.out.println(" Attendance Report");
-        for (int i = 0; i < dayCount; i++) {
-            System.out.println("Day %d -> Present: %d\n", i + 1, attendance[i]);
-            totalAttendance += attendance[i];
-            if (attendance[i] < classSize / 2) lowAttendanceDays++;
-        }
-
-        double average = totalAttendance / (double) dayCount;
-        double lowAttendanceRate = (lowAttendanceDays * 100.0) / dayCount;
-
-        System.out.println("Average Attendance: %.2f\n", average);
-        System.out.println("Low Attendance Days: %d (%.2f%%)\n", lowAttendanceDays, lowAttendanceRate);
-    }
-}
-
-
-
-
 
 
 

@@ -1,0 +1,1253 @@
+//Airline Reservation SYstem
+
+package com.form;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import javax.swing.*;
+
+import com.util.DB;
+
+public class LoginForm extends JFrame implements ActionListener {
+	JTextField userTxt=new JTextField("Enter Username");
+	JPasswordField passTxt=new JPasswordField("password");
+	JButton loginbtn=new JButton("Login");
+	JButton cancelbtn=new JButton("Cancel");
+//	constructor
+	public LoginForm(){
+		setTitle("Login form=");
+		setBounds(100,100,500,400);
+		setLayout(null);
+		userTxt.setBounds(50,30,120,25);
+		passTxt.setBounds(50,70,120,25);
+		loginbtn.setBounds(50,120,100,25);
+		cancelbtn.setBounds(170,120,100,25);
+		
+		add(userTxt);add(passTxt);add(loginbtn);add(cancelbtn);
+		loginbtn.addActionListener(this);
+		cancelbtn.addActionListener(this);
+		setVisible(true);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+		try(Connection con= DB.getConnection()) {
+            String sql="Select * FROM users WHERE username =? AND passwordHash=?";
+            PreparedStatement ps=con.prepareCall(sql);
+            ps.setString(1, userTxt.getText());
+            ps.setString(2, new String(passTxt.getPassword()));
+            ResultSet rs=ps.executeQuery();
+            if(rs.next()) {
+            	String role=rs.getString("role");
+            	dispose();
+            	new ARS(role, rs.getInt("userID"));
+            }else {
+            	JOptionPane.showMessageDialog(this, "Invalid Login");
+            }
+            
+            
+		} catch(Exception ex) { ex.printStackTrace();}
+		
+	}
+
+}
+
+package com.form;
+
+import java.awt.BorderLayout;
+
+import javax.swing.*;
+
+import com.panel.BookingPanel;
+import com.panel.FlightPanel;
+import com.panel.PaymentPanel;
+import com.panel.SchedulePanel;
+import com.panel.TicketPanel;
+import com.panel.UsersPanel;
+
+
+public class ARS  extends JFrame {
+	JTabbedPane tabs=new JTabbedPane();
+//	constructor
+public ARS(String role, int userid) {
+	setTitle("Airline Reservation System");
+	setSize(900,600);
+	setLayout(new BorderLayout());
+	if(role.equalsIgnoreCase("admin")) {
+		tabs.add("Users ",new UsersPanel());
+		tabs.add("Ticket ",new TicketPanel());
+		tabs.add("Schedule ",new SchedulePanel());
+		tabs.add("Payment ",new PaymentPanel());
+		tabs.add("Flight ",new FlightPanel());
+		tabs.add("Booking ",new BookingPanel());
+		
+		
+	}else if(role.equalsIgnoreCase("admin")) {
+		   
+	    tabs.add("Schedule", new SchedulePanel());
+	    tabs.add("Flight", new FlightPanel());
+	    tabs.add("Booking", new BookingPanel());
+	} else if(role.equalsIgnoreCase("passenger")) {
+	    
+	    tabs.add("Ticket", new TicketPanel());
+	    tabs.add("Payment", new PaymentPanel());
+	}
+	add(tabs,BorderLayout.CENTER);
+	setVisible(true);
+	setDefaultCloseOperation(EXIT_ON_CLOSE);
+}
+	
+
+
+	
+
+}
+
+package com.panel;
+
+import com.util.DB;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.*;
+
+public class UsersPanel extends JPanel implements ActionListener {
+
+	private JTextField idTxt, nameTxt,roleTxt,emailTxt,CreatedAtTxt;
+	private JPasswordField passTxt;
+	private JButton addBtn, updateBtn, deleteBtn, loadBtn;
+	private JTable table;
+	private DefaultTableModel model;
+	JComboBox<String> roleCmb = new JComboBox<>(new String[]{"admin", "passenger"});
+
+
+	public UsersPanel() {
+		setLayout(null);
+
+		// Fields
+		idTxt = new JTextField();
+		nameTxt = new JTextField();
+		passTxt = new JPasswordField();
+		roleTxt = new JTextField();
+		emailTxt = new JTextField();
+		CreatedAtTxt = new JTextField();
+          
+		// Buttons
+		addBtn = new JButton("Add");
+		updateBtn = new JButton("Update");
+		deleteBtn = new JButton("Delete");
+		loadBtn = new JButton("Load");
+
+		// Table
+		String[] labels = {"ID", "Username", "PasswordHash", "Role","Email","CreatedAt"};
+		model = new DefaultTableModel(labels, 0);
+		table = new JTable(model);
+		JScrollPane sp = new JScrollPane(table);
+		sp.setBounds(20, 250, 750, 200);
+		add(sp);
+
+		// Layout fields
+		int y = 20;
+		addField("ID", idTxt, y); y += 30;
+		addField("Username", nameTxt, y); y += 30;
+		addField("PasswordHash", passTxt, y); y += 30;
+		addField("Role", roleTxt, y); y += 30;
+		addField("Email", emailTxt, y); y += 30;
+		addField("CreatedAt", CreatedAtTxt, y); y += 30;
+
+		// Buttons
+		addButtons();
+	}
+
+	private void addField(String lbl, JComponent txt, int y) {
+		JLabel l = new JLabel(lbl);
+		l.setBounds(20, y, 80, 25);
+		txt.setBounds(100, y, 150, 25);
+		add(l);
+		add(txt);
+	}
+
+	private void addButtons() {
+		addBtn.setBounds(300, 20, 100, 30);
+		updateBtn.setBounds(300, 60, 100, 30);
+		deleteBtn.setBounds(300, 100, 100, 30);
+		loadBtn.setBounds(300, 140, 100, 30);
+
+		add(addBtn);
+		add(updateBtn);
+		add(deleteBtn);
+		add(loadBtn);
+
+		addBtn.addActionListener(this);
+		updateBtn.addActionListener(this);
+		deleteBtn.addActionListener(this);
+		loadBtn.addActionListener(this);
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		try (Connection con = DB.getConnection()) {
+			if (e.getSource() == addBtn) {
+				// Check for duplicates
+				String checkSql = "SELECT * FROM users WHERE username=?";
+				PreparedStatement checkPs = con.prepareStatement(checkSql);
+				checkPs.setString(1, nameTxt.getText());
+				ResultSet rs = checkPs.executeQuery();
+
+				if (rs.next()) {
+					JOptionPane.showMessageDialog(this,
+							"⚠ Username already exists!",
+							"Duplicate Error",
+							JOptionPane.WARNING_MESSAGE);
+				} else {
+					String sql = "INSERT INTO `users`(username, passwordHash,role,email,CreatedAt) VALUES(?,?,?,?,?)";
+					PreparedStatement ps = con.prepareStatement(sql);
+					ps.setString(1, nameTxt.getText());
+					ps.setString(2, new String(passTxt.getPassword()));
+					ps.setString(3, roleTxt.getText());
+					ps.setString(4, emailTxt.getText());
+					ps.setString(5, CreatedAtTxt.getText());
+					ps.executeUpdate();
+					JOptionPane.showMessageDialog(this, " User added successfully!");
+				}
+			} else if (e.getSource() == updateBtn) {
+				String sql = "UPDATE users SET username=?, passwordHash=?, role=?,email=?,CreatedAt=?, WHERE userid=?";
+				PreparedStatement ps = con.prepareStatement(sql);
+				ps.setString(1, nameTxt.getText());
+				ps.setString(2, new String(passTxt.getPassword()));
+				ps.setString(3, roleTxt.getText());
+				ps.setString(4, emailTxt.getText());
+				ps.setString(5, CreatedAtTxt.getText());
+				ps.setInt(6, Integer.parseInt(idTxt.getText()));
+				ps.executeUpdate();
+				JOptionPane.showMessageDialog(this, " User updated successfully!");
+			} else if (e.getSource() == deleteBtn) {
+				String sql = "DELETE FROM users WHERE userID=?";
+				PreparedStatement ps = con.prepareStatement(sql);
+				ps.setInt(1, Integer.parseInt(idTxt.getText()));
+				ps.executeUpdate();
+				JOptionPane.showMessageDialog(this, " User deleted successfully!");
+			} else if (e.getSource() == loadBtn) {
+				model.setRowCount(0);
+				String sql = "SELECT * FROM users";
+				ResultSet rs = con.createStatement().executeQuery(sql);
+				while (rs.next()) {
+					model.addRow(new Object[]{
+							rs.getInt("userID"),
+							rs.getString("Username"),
+							rs.getString("PasswordHash"),
+							rs.getString("role"),
+							rs.getString("email"),
+							rs.getString("CreatedAt"),
+					});
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			JOptionPane.showMessageDialog(this, " Error: " + ex.getMessage());
+		}
+	}
+
+	public static void main(String[] args) {
+		JFrame frame = new JFrame("Users Panel");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(800, 600);
+		frame.add(new UsersPanel());
+		frame.setVisible(true);
+	}
+}
+
+package com.panel;
+
+import java.awt.event.*;
+import java.awt.*;
+import java.sql.*;
+import java.sql.PreparedStatement;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import com.util.DB;
+
+public class BookingPanel extends JPanel implements ActionListener {
+	private JTextField idTxt, titleTxt, dateTxt, valueTxt, notesTxt, flightIdTxt;
+	private JComboBox<String> statusCmb;
+	private JButton addBtn, updateBtn, deleteBtn, loadBtn;
+	private JTable table;
+	private DefaultTableModel model;
+
+	public BookingPanel(){
+
+		setLayout(null);
+
+		// Fields
+		idTxt = new JTextField();
+		titleTxt = new JTextField();
+		dateTxt = new JTextField();
+		valueTxt = new JTextField();
+		notesTxt = new JTextField();
+		flightIdTxt = new JTextField();
+
+		// Status ComboBox
+		statusCmb = new JComboBox<>(new String[]{"Confirmed", "Pending", "Cancelled", "Completed"});
+
+		// Buttons
+		addBtn = new JButton("Add");
+		updateBtn = new JButton("Update");
+		deleteBtn = new JButton("Delete");
+		loadBtn = new JButton("Load");
+
+		// Table
+		String[] labels = {"BookingID", "Title", "Date", "Status", "Value", "Notes", "FlightID"};
+		model = new DefaultTableModel(labels, 0);
+		table = new JTable(model);
+		JScrollPane sp = new JScrollPane(table);
+		sp.setBounds(20, 280, 750, 200);
+		add(sp);
+
+		// Layout fields
+		int y = 20;
+		addField("BookingID", idTxt, y); y += 30;
+		addField("Title", titleTxt, y); y += 30;
+		addField("Date", dateTxt, y); y += 30;
+		addField("Status", statusCmb, y); y += 30;
+		addField("Value", valueTxt, y); y += 30;
+		addField("Notes", notesTxt, y); y += 30;
+		addField("FlightID", flightIdTxt, y); y += 30;
+
+		// Buttons
+		addButtons();
+
+		// Add table row click listener to populate fields
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int row = table.getSelectedRow();
+				if (row >= 0) {
+					idTxt.setText(model.getValueAt(row, 0).toString());
+					titleTxt.setText(model.getValueAt(row, 1).toString());
+					dateTxt.setText(model.getValueAt(row, 2).toString());
+					statusCmb.setSelectedItem(model.getValueAt(row, 3).toString());
+					valueTxt.setText(model.getValueAt(row, 4).toString());
+					notesTxt.setText(model.getValueAt(row, 5).toString());
+					flightIdTxt.setText(model.getValueAt(row, 6).toString());
+				}
+			}
+		});
+	}
+
+	private void addField(String lbl, JComponent txt, int y) {
+		JLabel l = new JLabel(lbl);
+		l.setBounds(20, y, 80, 25);
+		txt.setBounds(100, y, 150, 25);
+		add(l);
+		add(txt);
+	}
+
+	private void addButtons() {
+		addBtn.setBounds(300, 20, 100, 30);
+		updateBtn.setBounds(300, 60, 100, 30);
+		deleteBtn.setBounds(300, 100, 100, 30);
+		loadBtn.setBounds(300, 140, 100, 30);
+
+		add(addBtn);
+		add(updateBtn);
+		add(deleteBtn);
+		add(loadBtn);
+
+		addBtn.addActionListener(this);
+		updateBtn.addActionListener(this);
+		deleteBtn.addActionListener(this);
+		loadBtn.addActionListener(this);
+	}
+
+	private void clearFields() {
+		idTxt.setText("");
+		titleTxt.setText("");
+		dateTxt.setText("");
+		statusCmb.setSelectedIndex(0);
+		valueTxt.setText("");
+		notesTxt.setText("");
+		flightIdTxt.setText("");
+
+
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		try (Connection con = DB.getConnection()) {
+			if (e.getSource() == addBtn) {
+				// Check if FlightID exists (optional validation)
+				if (!flightIdTxt.getText().isEmpty()) {
+					String checkFlightSql = "SELECT * FROM flight WHERE FlightID=?";
+					PreparedStatement checkFlightPs = con.prepareStatement(checkFlightSql);
+					checkFlightPs.setInt(1, Integer.parseInt(flightIdTxt.getText()));
+					ResultSet flightRs = checkFlightPs.executeQuery();
+
+					if (!flightRs.next()) {
+						JOptionPane.showMessageDialog(this,
+								"⚠ Flight ID does not exist!",
+								"Invalid Flight ID",
+								JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+				}
+
+				String sql = "INSERT INTO booking(Title, Date, Status, Value, Notes, FlightID) VALUES(?,?,?,?,?,?)";
+				PreparedStatement ps = con.prepareStatement(sql);
+				ps.setString(1, titleTxt.getText());
+				ps.setString(2, dateTxt.getText());
+				ps.setString(3, statusCmb.getSelectedItem().toString());
+				ps.setDouble(4, Double.parseDouble(valueTxt.getText()));
+				ps.setString(5, notesTxt.getText());
+				if (flightIdTxt.getText().isEmpty()) {
+					ps.setNull(6, Types.INTEGER);
+				} else {
+					ps.setInt(6, Integer.parseInt(flightIdTxt.getText()));
+				}
+				ps.executeUpdate();
+				JOptionPane.showMessageDialog(this, "✅ Booking added successfully!");
+				clearFields();
+				loadBookings(con);
+
+			} else if (e.getSource() == updateBtn) {
+				if (idTxt.getText().isEmpty()) {
+					JOptionPane.showMessageDialog(this, "⚠ Please select a booking to update!");
+					return;
+				}
+
+				// Check if FlightID exists (optional validation)
+				if (!flightIdTxt.getText().isEmpty()) {
+					String checkFlightSql = "SELECT * FROM flight WHERE FlightID=?";
+					PreparedStatement checkFlightPs = con.prepareStatement(checkFlightSql);
+					checkFlightPs.setInt(1, Integer.parseInt(flightIdTxt.getText()));
+					ResultSet flightRs = checkFlightPs.executeQuery();
+
+					if (!flightRs.next()) {
+						JOptionPane.showMessageDialog(this,
+								"⚠ Flight ID does not exist!",
+								"Invalid Flight ID",
+								JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+				}
+
+				String sql = "UPDATE booking SET Title=?, Date=?, Status=?, Value=?, Notes=?, FlightID=? WHERE BookingID=?";
+				PreparedStatement ps = con.prepareStatement(sql);
+				ps.setString(1, titleTxt.getText());
+				ps.setString(2, dateTxt.getText());
+				ps.setString(3, statusCmb.getSelectedItem().toString());
+				ps.setDouble(4, Double.parseDouble(valueTxt.getText()));
+				ps.setString(5, notesTxt.getText());
+				if (flightIdTxt.getText().isEmpty()) {
+					ps.setNull(6, Types.INTEGER);
+				} else {
+					ps.setInt(6, Integer.parseInt(flightIdTxt.getText()));
+				}
+				ps.setInt(7, Integer.parseInt(idTxt.getText()));
+				ps.executeUpdate();
+				JOptionPane.showMessageDialog(this, "✅ Booking updated successfully!");
+				clearFields();
+				loadBookings(con);
+
+			} else if (e.getSource() == deleteBtn) {
+				if (idTxt.getText().isEmpty()) {
+					JOptionPane.showMessageDialog(this, "⚠ Please select a booking to delete!");
+					return;
+				}
+
+				int confirm = JOptionPane.showConfirmDialog(this, 
+						"Are you sure you want to delete this booking?", 
+						"Confirm Delete", 
+						JOptionPane.YES_NO_OPTION);
+				if (confirm == JOptionPane.YES_OPTION) {
+					String sql = "DELETE FROM booking WHERE BookingID=?";
+					PreparedStatement ps = con.prepareStatement(sql);
+					ps.setInt(1, Integer.parseInt(idTxt.getText()));
+					ps.executeUpdate();
+					JOptionPane.showMessageDialog(this, "✅ Booking deleted successfully!");
+					clearFields();
+					loadBookings(con);
+				}
+
+			} else if (e.getSource() == loadBtn) {
+				loadBookings(con);
+			}
+		} catch (NumberFormatException ex) {
+			JOptionPane.showMessageDialog(this, "⚠ Invalid number format! Please check Value and FlightID fields.");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			JOptionPane.showMessageDialog(this, "❌ Error: " + ex.getMessage());
+		}
+	}
+
+	private void loadBookings(Connection con) throws SQLException {
+		model.setRowCount(0);
+		String sql = "SELECT * FROM booking ORDER BY BookingID";
+		ResultSet rs = con.createStatement().executeQuery(sql);
+		while (rs.next()) {
+			model.addRow(new Object[]{
+					rs.getInt("BookingID"),
+					rs.getString("Title"),
+					rs.getString("Date"),
+					rs.getString("Status"),
+					rs.getDouble("Value"),
+					rs.getString("Notes"),
+					rs.getObject("FlightID") // Using getObject to handle potential NULL values
+			});
+		}
+	}
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(null); {
+			JFrame frame = new JFrame("Booking Management Panel");
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setSize(800, 600);
+			frame.setLocationRelativeTo(null);
+			frame.add(new BookingPanel());
+			frame.setVisible(true);
+		};
+
+
+	}
+
+
+}
+
+package com.panel;
+
+import java.awt.event.*;
+import java.awt.*;
+import java.sql.*;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import com.util.*;
+
+public class FlightPanel extends JPanel implements ActionListener {
+	private JTextField idTxt, flightNumberTxt, nameTxt, descriptionTxt, originTxt, destinationTxt, departureTimeTxt, arrivalTimeTxt, createdAtTxt;
+	private JComboBox<String> statusCmb;
+	private JButton addBtn, updateBtn, deleteBtn, loadBtn;
+	private JTable table;
+	private DefaultTableModel model;
+
+	public FlightPanel(){
+
+		setLayout(null);
+
+		// Fields
+		idTxt = new JTextField();
+		flightNumberTxt = new JTextField();
+		nameTxt = new JTextField();
+		descriptionTxt = new JTextField();
+		originTxt = new JTextField();
+		destinationTxt = new JTextField();
+		departureTimeTxt = new JTextField();
+		arrivalTimeTxt = new JTextField();
+		createdAtTxt = new JTextField();
+
+		// Status ComboBox
+		statusCmb = new JComboBox<>(new String[]{"Scheduled", "Boarding", "Departed", "Arrived", "Delayed", "Cancelled"});
+
+		// Buttons
+		addBtn = new JButton("Add");
+		updateBtn = new JButton("Update");
+		deleteBtn = new JButton("Delete");
+		loadBtn = new JButton("Load");
+
+		// Table
+		String[] labels = {"FlightID", "FlightNumber", "Name", "Description", "Origin", "Destination", "DepartureTime", "ArrivalTime", "Status", "CreatedAt"};
+		model = new DefaultTableModel(labels, 0);
+		table = new JTable(model);
+		JScrollPane sp = new JScrollPane(table);
+		sp.setBounds(20, 320, 950, 200);
+		add(sp);
+
+		// Layout fields in two columns
+		int y = 20;
+		// Left column
+		addField("FlightID", idTxt, 20, y); y += 30;
+		addField("Flight Number", flightNumberTxt, 20, y); y += 30;
+		addField("Name", nameTxt, 20, y); y += 30;
+		addField("Description", descriptionTxt, 20, y); y += 30;
+		addField("Origin", originTxt, 20, y); y += 30;
+
+		// Right column
+		y = 20;
+		addField("Destination", destinationTxt, 400, y); y += 30;
+		addField("Departure Time", departureTimeTxt, 400, y); y += 30;
+		addField("Arrival Time", arrivalTimeTxt, 400, y); y += 30;
+		addField("Status", statusCmb, 400, y); y += 30;
+		addField("Created At", createdAtTxt, 400, y); y += 30;
+
+		// Buttons
+		addButtons();
+
+		// Add table row click listener to populate fields
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int row = table.getSelectedRow();
+				if (row >= 0) {
+					idTxt.setText(model.getValueAt(row, 0).toString());
+					flightNumberTxt.setText(model.getValueAt(row, 1).toString());
+					nameTxt.setText(model.getValueAt(row, 2).toString());
+					descriptionTxt.setText(model.getValueAt(row, 3).toString());
+					originTxt.setText(model.getValueAt(row, 4).toString());
+					destinationTxt.setText(model.getValueAt(row, 5).toString());
+					departureTimeTxt.setText(model.getValueAt(row, 6).toString());
+					arrivalTimeTxt.setText(model.getValueAt(row, 7).toString());
+					statusCmb.setSelectedItem(model.getValueAt(row, 8).toString());
+					createdAtTxt.setText(model.getValueAt(row, 9).toString());
+				}
+			}
+		});
+	}
+
+	private void addField(String lbl, JComponent component, int x, int y) {
+		JLabel label = new JLabel(lbl);
+		label.setBounds(x, y, 120, 25);
+		component.setBounds(x + 125, y, 150, 25);
+		add(label);
+		add(component);
+	}
+
+	private void addButtons() {
+		addBtn.setBounds(750, 20, 100, 30);
+		updateBtn.setBounds(750, 60, 100, 30);
+		deleteBtn.setBounds(750, 100, 100, 30);
+		loadBtn.setBounds(750, 140, 100, 30);
+
+		add(addBtn);
+		add(updateBtn);
+		add(deleteBtn);
+		add(loadBtn);
+
+		addBtn.addActionListener(this);
+		updateBtn.addActionListener(this);
+		deleteBtn.addActionListener(this);
+		loadBtn.addActionListener(this);
+	}
+
+	private void clearFields() {
+		idTxt.setText("");
+		flightNumberTxt.setText("");
+		nameTxt.setText("");
+		descriptionTxt.setText("");
+		originTxt.setText("");
+		destinationTxt.setText("");
+		departureTimeTxt.setText("");
+		arrivalTimeTxt.setText("");
+		statusCmb.setSelectedIndex(0);
+		createdAtTxt.setText("");
+
+
+
+	}
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		 try (Connection con = DB.getConnection()) {
+	            if (e.getSource() == addBtn) {
+	                // Check for duplicate flight numbers
+	                String checkSql = "SELECT * FROM flight WHERE FlightNumber=?";
+	                PreparedStatement checkPs = con.prepareStatement(checkSql);
+	                checkPs.setString(1, flightNumberTxt.getText());
+	                ResultSet rs = checkPs.executeQuery();
+
+	                if (rs.next()) {
+	                    JOptionPane.showMessageDialog(this,
+	                            "⚠ Flight Number already exists!",
+	                            "Duplicate Error",
+	                            JOptionPane.WARNING_MESSAGE);
+	                } else {
+	                    String sql = "INSERT INTO flight(FlightNumber, Name, Description, Origin, Destination, DepartureTime, ArrivalTime, Status, CreatedAt) VALUES(?,?,?,?,?,?,?,?,?)";
+	                    PreparedStatement ps = con.prepareStatement(sql);
+	                    ps.setString(1, flightNumberTxt.getText());
+	                    ps.setString(2, nameTxt.getText());
+	                    ps.setString(3, descriptionTxt.getText());
+	                    ps.setString(4, originTxt.getText());
+	                    ps.setString(5, destinationTxt.getText());
+	                    ps.setString(6, departureTimeTxt.getText());
+	                    ps.setString(7, arrivalTimeTxt.getText());
+	                    ps.setString(8, statusCmb.getSelectedItem().toString());
+	                    ps.setString(9, createdAtTxt.getText());
+	                    ps.executeUpdate();
+	                    JOptionPane.showMessageDialog(this, "✅ Flight added successfully!");
+	                    clearFields();
+	                    loadFlights(con);
+	                }
+	            } else if (e.getSource() == updateBtn) {
+	                if (idTxt.getText().isEmpty()) {
+	                    JOptionPane.showMessageDialog(this, "⚠ Please select a flight to update!");
+	                    return;
+	                }
+	                String sql = "UPDATE flight SET FlightNumber=?, Name=?, Description=?, Origin=?, Destination=?, DepartureTime=?, ArrivalTime=?, Status=?, CreatedAt=? WHERE FlightID=?";
+	                PreparedStatement ps = con.prepareStatement(sql);
+	                ps.setString(1, flightNumberTxt.getText());
+	                ps.setString(2, nameTxt.getText());
+	                ps.setString(3, descriptionTxt.getText());
+	                ps.setString(4, originTxt.getText());
+	                ps.setString(5, destinationTxt.getText());
+	                ps.setString(6, departureTimeTxt.getText());
+	                ps.setString(7, arrivalTimeTxt.getText());
+	                ps.setString(8, statusCmb.getSelectedItem().toString());
+	                ps.setString(9, createdAtTxt.getText());
+	                ps.setInt(10, Integer.parseInt(idTxt.getText()));
+	                ps.executeUpdate();
+	                JOptionPane.showMessageDialog(this, "✅ Flight updated successfully!");
+	                clearFields();
+	                loadFlights(con);
+	            } else if (e.getSource() == deleteBtn) {
+	                if (idTxt.getText().isEmpty()) {
+	                    JOptionPane.showMessageDialog(this, "⚠ Please select a flight to delete!");
+	                    return;
+	                }
+	                int confirm = JOptionPane.showConfirmDialog(this, 
+	                    "Are you sure you want to delete this flight?", 
+	                    "Confirm Delete", 
+	                    JOptionPane.YES_NO_OPTION);
+	                if (confirm == JOptionPane.YES_OPTION) {
+	                    String sql = "DELETE FROM flight WHERE FlightID=?";
+	                    PreparedStatement ps = con.prepareStatement(sql);
+	                    ps.setInt(1, Integer.parseInt(idTxt.getText()));
+	                    ps.executeUpdate();
+	                    JOptionPane.showMessageDialog(this, "✅ Flight deleted successfully!");
+	                    clearFields();
+	                    loadFlights(con);
+	                }
+	            } else if (e.getSource() == loadBtn) {
+	                loadFlights(con);
+	            }
+	        } catch (NumberFormatException ex) {
+	            JOptionPane.showMessageDialog(this, "⚠ Invalid number format!");
+	        } catch (Exception ex) {
+	            ex.printStackTrace();
+	            JOptionPane.showMessageDialog(this, "❌ Error: " + ex.getMessage());
+	        }
+	    }
+
+	    private void loadFlights(Connection con) throws SQLException {
+	        model.setRowCount(0);
+	        String sql = "SELECT * FROM flight ORDER BY FlightID";
+	        ResultSet rs = con.createStatement().executeQuery(sql);
+	        while (rs.next()) {
+	            model.addRow(new Object[]{
+	                    rs.getInt("FlightID"),
+	                    rs.getString("FlightNumber"),
+	                    rs.getString("Name"),
+	                    rs.getString("Description"),
+	                    rs.getString("Origin"),
+	                    rs.getString("Destination"),
+	                    rs.getString("DepartureTime"),
+	                    rs.getString("ArrivalTime"),
+	                    rs.getString("Status"),
+	                    rs.getString("CreatedAt")
+	            });
+	        }
+	    }
+
+	    public static void main(String[] args) {
+	        SwingUtilities.invokeLater(null);{
+	            JFrame frame = new JFrame("Flight Management Panel");
+	            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	            frame.setSize(1000, 600);
+	            frame.setLocationRelativeTo(null);
+	            frame.add(new FlightPanel());
+	            frame.setVisible(true);
+	        };
+
+		
+	
+	}
+
+}
+
+package com.panel;
+
+import java.awt.event.*;
+import java.awt.*;
+import java.sql.*;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import com.util.DB;
+
+public class TicketPanel extends JPanel implements ActionListener{
+	private JTextField idTxt, categoryTxt, detailTxt, ownerTxt, locationTxt, createdAtTxt, scheduleIdTxt;
+	private JButton addBtn, updateBtn, deleteBtn, loadBtn;
+	private JTable table;
+	private DefaultTableModel model;
+	
+	public TicketPanel(){
+        setLayout(null);
+
+        // Fields
+        idTxt = new JTextField();
+        categoryTxt = new JTextField();
+        detailTxt = new JTextField();
+        ownerTxt = new JTextField();
+        locationTxt = new JTextField();
+        createdAtTxt = new JTextField();
+        scheduleIdTxt = new JTextField();
+
+        // Buttons
+        addBtn = new JButton("Add");
+        updateBtn = new JButton("Update");
+        deleteBtn = new JButton("Delete");
+        loadBtn = new JButton("Load");
+
+        // Table
+        String[] labels = {"TicketID", "Category", "Detail", "Owner", "Location", "CreatedAt", "ScheduleID"};
+        model = new DefaultTableModel(labels, 0);
+        table = new JTable(model);
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBounds(20, 300, 750, 200);
+        add(sp);
+
+        // Layout fields
+        int y = 20;
+        addField("TicketID", idTxt, y); y += 30;
+        addField("Category", categoryTxt, y); y += 30;
+        addField("Detail", detailTxt, y); y += 30;
+        addField("Owner", ownerTxt, y); y += 30;
+        addField("Location", locationTxt, y); y += 30;
+        addField("CreatedAt", createdAtTxt, y); y += 30;
+        addField("ScheduleID", scheduleIdTxt, y); y += 30;
+
+        // Buttons
+        addButtons();
+    }
+
+    private void addField(String lbl, JComponent txt, int y) {
+        JLabel l = new JLabel(lbl);
+        l.setBounds(20, y, 80, 25);
+        txt.setBounds(120, y, 150, 25);
+        add(l);
+        add(txt);
+    }
+
+    private void addButtons() {
+        addBtn.setBounds(300, 20, 100, 30);
+        updateBtn.setBounds(300, 60, 100, 30);
+        deleteBtn.setBounds(300, 100, 100, 30);
+        loadBtn.setBounds(300, 140, 100, 30);
+
+        add(addBtn);
+        add(updateBtn);
+        add(deleteBtn);
+        add(loadBtn);
+
+        addBtn.addActionListener(this);
+        updateBtn.addActionListener(this);
+        deleteBtn.addActionListener(this);
+        loadBtn.addActionListener(this);
+
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		try (Connection con = DB.getConnection()) {
+
+            if (e.getSource() == addBtn) {
+                String sql = "INSERT INTO ticket(Category, Detail, Owner, Location, CreatedAt, ScheduleID) VALUES(?,?,?,?,?,?)";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, categoryTxt.getText());
+                ps.setString(2, detailTxt.getText());
+                ps.setString(3, ownerTxt.getText());
+                ps.setString(4, locationTxt.getText());
+                ps.setString(5, createdAtTxt.getText());
+                ps.setInt(6, Integer.parseInt(scheduleIdTxt.getText()));
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Ticket added successfully!");
+
+            } else if (e.getSource() == updateBtn) {
+                String sql = "UPDATE ticket SET Category=?, Detail=?, Owner=?, Location=?, CreatedAt=?, ScheduleID=? WHERE TicketID=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, categoryTxt.getText());
+                ps.setString(2, detailTxt.getText());
+                ps.setString(3, ownerTxt.getText());
+                ps.setString(4, locationTxt.getText());
+                ps.setString(5, createdAtTxt.getText());
+                ps.setInt(6, Integer.parseInt(scheduleIdTxt.getText()));
+                ps.setInt(7, Integer.parseInt(idTxt.getText()));
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Ticket updated successfully!");
+
+            } else if (e.getSource() == deleteBtn) {
+                String sql = "DELETE FROM ticket WHERE TicketID=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setInt(1, Integer.parseInt(idTxt.getText()));
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Ticket deleted successfully!");
+
+            } else if (e.getSource() == loadBtn) {
+                model.setRowCount(0);
+                String sql = "SELECT * FROM ticket";
+                ResultSet rs = con.createStatement().executeQuery(sql);
+                while (rs.next()) {
+                    model.addRow(new Object[]{
+                        rs.getInt("TicketID"),
+                        rs.getString("Category"),
+                        rs.getString("Detail"),
+                        rs.getString("Owner"),
+                        rs.getString("Location"),
+                        rs.getString("CreatedAt"),
+                        rs.getInt("ScheduleID")
+                    });
+                }
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Ticket Panel");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.add(new TicketPanel());
+        frame.setVisible(true);
+    }
+
+	}
+
+package com.panel;
+
+import java.awt.event.*;
+import java.awt.*;
+import java.sql.*;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import com.util.DB;
+
+public class PaymentPanel  extends JPanel implements ActionListener {
+	 private JTextField idTxt, refNoTxt, amountTxt, dateTxt, bookingIdTxt;
+	    private JComboBox<String> methodCmb, statusCmb;
+	    private JButton addBtn, updateBtn, deleteBtn, loadBtn;
+	    private JTable table;
+	    private DefaultTableModel model;
+
+
+       public PaymentPanel(){
+    	   setLayout(null);
+
+           // Fields
+           idTxt = new JTextField();
+           refNoTxt = new JTextField();
+           amountTxt = new JTextField();
+           dateTxt = new JTextField();
+           bookingIdTxt = new JTextField();
+
+           // Dropdowns
+           methodCmb = new JComboBox<>(new String[]{"Credit Card", "Mobile Money", "Cash", "Bank Transfer"});
+           statusCmb = new JComboBox<>(new String[]{"Paid", "Pending", "Failed"});
+
+           // Table
+           String[] labels = {"PaymentID", "ReferenceNo", "Amount", "Date", "Method", "Status", "BookingID"};
+           model = new DefaultTableModel(labels, 0);
+           table = new JTable(model);
+           JScrollPane sp = new JScrollPane(table);
+           sp.setBounds(20, 280, 750, 200);
+           add(sp);
+
+           // Layout fields
+           int y = 20;
+           addField("PaymentID", idTxt, y); y += 30;
+           addField("ReferenceNo", refNoTxt, y); y += 30;
+           addField("Amount", amountTxt, y); y += 30;
+           addField("Date (YYYY-MM-DD HH:MM:SS)", dateTxt, y); y += 30;
+           addField("Method", methodCmb, y); y += 30;
+           addField("Status", statusCmb, y); y += 30;
+           addField("BookingID", bookingIdTxt, y); y += 30;
+
+           // Buttons
+           addButtons();
+       }
+
+       private void addField(String lbl, JComponent txt, int y) {
+           JLabel l = new JLabel(lbl);
+           l.setBounds(20, y, 160, 25);
+           txt.setBounds(190, y, 150, 25);
+           add(l);
+           add(txt);
+       }
+
+       private void addButtons() {
+           addBtn = new JButton("Add");
+           updateBtn = new JButton("Update");
+           deleteBtn = new JButton("Delete");
+           loadBtn = new JButton("Load");
+
+           addBtn.setBounds(380, 20, 100, 30);
+           updateBtn.setBounds(380, 60, 100, 30);
+           deleteBtn.setBounds(380, 100, 100, 30);
+           loadBtn.setBounds(380, 140, 100, 30);
+
+           add(addBtn);
+           add(updateBtn);
+           add(deleteBtn);
+           add(loadBtn);
+
+           addBtn.addActionListener(this);
+           updateBtn.addActionListener(this);
+           deleteBtn.addActionListener(this);
+           loadBtn.addActionListener(this);
+
+       }
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		try (Connection con = DB.getConnection()) {
+            if (e.getSource() == addBtn) {
+                String sql = "INSERT INTO payment(ReferenceNo, Amount, Date, Method, Status, BookingID) VALUES(?,?,?,?,?,?)";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, refNoTxt.getText());
+                ps.setDouble(2, Double.parseDouble(amountTxt.getText()));
+                ps.setString(3, dateTxt.getText());
+                ps.setString(4, methodCmb.getSelectedItem().toString());
+                ps.setString(5, statusCmb.getSelectedItem().toString());
+                ps.setInt(6, Integer.parseInt(bookingIdTxt.getText()));
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Payment added successfully!");
+            } else if (e.getSource() == updateBtn) {
+                String sql = "UPDATE payment SET ReferenceNo=?, Amount=?, Date=?, Method=?, Status=?, BookingID=? WHERE PaymentID=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, refNoTxt.getText());
+                ps.setDouble(2, Double.parseDouble(amountTxt.getText()));
+                ps.setString(3, dateTxt.getText());
+                ps.setString(4, methodCmb.getSelectedItem().toString());
+                ps.setString(5, statusCmb.getSelectedItem().toString());
+                ps.setInt(6, Integer.parseInt(bookingIdTxt.getText()));
+                ps.setInt(7, Integer.parseInt(idTxt.getText()));
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Payment updated successfully!");
+            } else if (e.getSource() == deleteBtn) {
+                String sql = "DELETE FROM payment WHERE PaymentID=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setInt(1, Integer.parseInt(idTxt.getText()));
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Payment deleted successfully!");
+            } else if (e.getSource() == loadBtn) {
+                model.setRowCount(0);
+                String sql = "SELECT * FROM payment";
+                ResultSet rs = con.createStatement().executeQuery(sql);
+                while (rs.next()) {
+                    model.addRow(new Object[]{
+                            rs.getInt("PaymentID"),
+                            rs.getString("ReferenceNo"),
+                            rs.getDouble("Amount"),
+                            rs.getString("Date"),
+                            rs.getString("Method"),
+                            rs.getString("Status"),
+                            rs.getInt("BookingID"),
+                    });
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Payment Panel");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(820, 600);
+        frame.add(new PaymentPanel());
+        frame.setVisible(true);
+    
+	
+	}
+
+
+
+	}
+
+package com.panel;
+
+import java.awt.event.*;
+import java.awt.*;
+import java.sql.*;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import com.util.DB;
+
+public class SchedulePanel  extends JPanel implements ActionListener{
+    private JTextField idTxt, nameTxt, typeTxt, startDateTxt, endDateTxt, statusTxt, flightIdTxt;
+    private JButton addBtn, updateBtn, deleteBtn, loadBtn;
+    private JTable table;
+    private DefaultTableModel model;
+
+ public SchedulePanel(){
+	   setLayout(null);
+
+       // Fields
+       idTxt = new JTextField();
+       nameTxt = new JTextField();
+       typeTxt = new JTextField();
+       startDateTxt = new JTextField();
+       endDateTxt = new JTextField();
+       statusTxt = new JTextField();
+       flightIdTxt = new JTextField();
+
+       // Table
+       String[] labels = {"ScheduleID", "Name", "Type", "StartDate", "EndDate", "Status", "FlightID"};
+       model = new DefaultTableModel(labels, 0);
+       table = new JTable(model);
+       JScrollPane sp = new JScrollPane(table);
+       sp.setBounds(20, 280, 750, 200);
+       add(sp);
+
+       // Layout fields
+       int y = 20;
+       addField("ScheduleID", idTxt, y); y += 30;
+       addField("Name", nameTxt, y); y += 30;
+       addField("Type", typeTxt, y); y += 30;
+       addField("StartDate (YYYY-MM-DD)", startDateTxt, y); y += 30;
+       addField("EndDate (YYYY-MM-DD)", endDateTxt, y); y += 30;
+       addField("Status", statusTxt, y); y += 30;
+       addField("FlightID", flightIdTxt, y); y += 30;
+
+       // Buttons
+       addButtons();
+   }
+
+   private void addField(String lbl, JComponent txt, int y) {
+       JLabel l = new JLabel(lbl);
+       l.setBounds(20, y, 150, 25);
+       txt.setBounds(180, y, 150, 25);
+       add(l);
+       add(txt);
+   }
+
+   private void addButtons() {
+       addBtn = new JButton("Add");
+       updateBtn = new JButton("Update");
+       deleteBtn = new JButton("Delete");
+       loadBtn = new JButton("Load");
+
+       addBtn.setBounds(380, 20, 100, 30);
+       updateBtn.setBounds(380, 60, 100, 30);
+       deleteBtn.setBounds(380, 100, 100, 30);
+       loadBtn.setBounds(380, 140, 100, 30);
+
+       add(addBtn);
+       add(updateBtn);
+       add(deleteBtn);
+       add(loadBtn);
+
+       addBtn.addActionListener(this);
+       updateBtn.addActionListener(this);
+       deleteBtn.addActionListener(this);
+       loadBtn.addActionListener(this);
+ }
+
+
+@Override
+public void actionPerformed(ActionEvent e) {
+	try (Connection con = DB.getConnection()) {
+        if (e.getSource() == addBtn) {
+            String sql = "INSERT INTO schedule(Name, Type, StartDate, EndDate, Status, FlightID) VALUES (?,?,?,?,?,?)";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, nameTxt.getText());
+            ps.setString(2, typeTxt.getText());
+            ps.setString(3, startDateTxt.getText());
+            ps.setString(4, endDateTxt.getText());
+            ps.setString(5, statusTxt.getText());
+            ps.setInt(6, Integer.parseInt(flightIdTxt.getText()));
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Schedule added successfully!");
+        } else if (e.getSource() == updateBtn) {
+            String sql = "UPDATE schedule SET Name=?, Type=?, StartDate=?, EndDate=?, Status=?, FlightID=? WHERE ScheduleID=?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, nameTxt.getText());
+            ps.setString(2, typeTxt.getText());
+            ps.setString(3, startDateTxt.getText());
+            ps.setString(4, endDateTxt.getText());
+            ps.setString(5, statusTxt.getText());
+            ps.setInt(6, Integer.parseInt(flightIdTxt.getText()));
+            ps.setInt(7, Integer.parseInt(idTxt.getText()));
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Schedule updated successfully!");
+        } else if (e.getSource() == deleteBtn) {
+            String sql = "DELETE FROM schedule WHERE ScheduleID=?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, Integer.parseInt(idTxt.getText()));
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Schedule deleted successfully!");
+        } else if (e.getSource() == loadBtn) {
+            model.setRowCount(0);
+            String sql = "SELECT * FROM schedule";
+            ResultSet rs = con.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                        rs.getInt("ScheduleID"),
+                        rs.getString("Name"),
+                        rs.getString("Type"),
+                        rs.getString("StartDate"),
+                        rs.getString("EndDate"),
+                        rs.getString("Status"),
+                        rs.getInt("FlightID")
+                });
+            }
+        }
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+    }
+}
+
+public static void main(String[] args) {
+    JFrame frame = new JFrame("Schedule Panel");
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setSize(820, 600);
+    frame.add(new SchedulePanel());
+    frame.setVisible(true);
+}
+
+	
+}
+
+package com.test;
+
+import com.form.LoginForm;
+
+public class TestARS {
+
+	public static void main(String[] args) {
+  LoginForm lgfm=new LoginForm();
+	}
+
+}
+
+package com.util;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class DB {
+	public static Connection getConnection()throws Exception{
+		Class.forName("com.mysql.cj.jdbc.Driver");
+		return DriverManager.getConnection("jdbc:mysql://localhost/airlinereservationsystemdb","root","");
+	}
+
+
+
+}
+
+
+
+
+
+
+
+
+
